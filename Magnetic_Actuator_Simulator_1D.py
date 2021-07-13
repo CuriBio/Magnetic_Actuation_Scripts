@@ -61,7 +61,7 @@ print(k_Tissue)
 # Simplified, at what x is force_func(x) equal to k*(x - x0)
 
 # Model parameters
-layers = 5 # layers of wraps
+layers = 3 # layers of wraps
 wraps = 10 # wraps along coil
 radius = 1 # core radius mm
 mu0 = 2e4 # Minimum relaive permeability of 4N iron, H/m
