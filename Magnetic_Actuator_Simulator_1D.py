@@ -50,7 +50,7 @@ M0 = testm.getB([0, 0, 5])[2] / 2 / ua * .005**3 * 4 * np.pi * 1e-3 #A/m**2, sim
 print("Dipole magnitude of permanent magnet")
 print(M0)
 
-E = 2e4 #Pa, Young's Modulus of tissue
+E = 5e4 #Pa, Young's Modulus of tissue
 A = np.pi * (.0005)**2 #m sq.
 L = .008 #m Length of tissue
 k_Tissue = E*A/L
@@ -61,7 +61,7 @@ print(k_Tissue)
 # Simplified, at what x is force_func(x) equal to k*(x - x0)
 
 # Model parameters
-layers = 3 # layers of wraps
+layers = 5 # layers of wraps
 wraps = 10 # wraps along coil
 radius = 1 # core radius mm
 mu0 = 2e4 # Minimum relaive permeability of 4N iron, H/m
@@ -70,7 +70,7 @@ wire_d = .21 # coil wire diameter, mm
 
 # Sweep parameters
 start = 0
-end = 125
+end = 300
 step = .00001 #A, increment of coil current
 dist = []
 
@@ -100,4 +100,31 @@ for wrap in range(0, wraps):
 print(abs(imax) * R**2)
 
 print("Maximum field at sensor (T)")
-print(make_Coil(-imax, wire_d, layers, wraps, radius).getB([3, 0, 3]) * mu0 / 1e3)
+
+fields = np.zeros(200)
+forces = np.zeros(200)
+span = 10 #mm
+co = make_Coil(-imax - .003, wire_d, layers, wraps, radius)
+
+for i in range(-100, 100):
+    fields[i + 100] = co.getB([6, 0, span*i/100])[2] / 1e3 * mu0 #span/100 mm per step, T
+    forces[i + 100] = get_coil_force_1d(span*i/100/1e3, co, M0, 1e-6, mu0)
+
+distance = np.linspace(-span, span-span/100, len(fields))
+
+plt.plot(distance, fields)
+plt.plot(distance, np.zeros(len(fields)))
+plt.xlabel("Sensor distance from coil (mm)")
+plt.ylabel("Flux density z component at sensor (mT)")
+plt.legend(('Field from coil', 'Zero field'))
+plt.show()
+
+plt.plot(distance, forces)
+plt.plot(distance, k_Tissue/1e3*(distance - 5))
+plt.ylabel("Force on magnet (N)")
+plt.xlabel("Magnet distance from end of coil (mm)")
+plt.legend(('From Coil', 'From Spring (tissue)'))
+plt.grid(True)
+plt.show()
+
+print(co.getB([6, 0, 3.26]) / 1e3 * mu0)
